@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DAA Quiz Prep</title>
+<style>
+  /* ---------- Design tokens (light + dark) ---------- */
+  :root {
+    --bg: #f2f4f8;
+    --surface: #ffffff;
+    --ink: #151c2e;
+    --muted: #5b6478;
+    --line: #d9deea;
+    --accent: #3340c4;
+    --accent-soft: #e4e7fb;
+    --good: #14744b;
+    --good-soft: #dcf3e8;
+    --bad: #b3261e;
+    --bad-soft: #fbe3e1;
+    --warn: #8a5a00;
+    --warn-soft: #fdf0d2;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10131b;
+      --surface: #181c27;
+      --ink: #e8ecf6;
+      --muted: #98a2b8;
+      --line: #2b3244;
+      --accent: #8d99ff;
+      --accent-soft: #232a52;
+      --good: #4fd096;
+      --good-soft: #14352a;
+      --bad: #ff8a80;
+      --bad-soft: #3d1f1d;
+      --warn: #f2c15a;
+      --warn-soft: #3a2f12;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55; -webkit-text-size-adjust: 100%;
+  }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 700; line-height: 1.2; margin: 0; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ---------- Home ---------- */
+  .hero { padding: 28px 0 8px; }
+  .hero h1 { font-size: clamp(1.9rem, 6vw, 2.6rem); }
+  .hero p { color: var(--muted); margin: 10px 0 0; max-width: 56ch; }
+  .section-title { font-size: 1.15rem; margin: 30px 0 10px; }
+  .mode-row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 560px) { .mode-row { grid-template-columns: 1fr; } }
+  .mode {
+    text-align: left; background: var(--accent); color: #fff; border: 0; border-radius: 14px;
+    padding: 18px; display: block; width: 100%;
+  }
+  @media (prefers-color-scheme: dark) { .mode { color: #0e1230; } }
+  .mode.alt { background: var(--surface); color: var(--ink); border: 2px solid var(--accent); }
+  .mode b { display: block; font-size: 1.1rem; font-family: Georgia, serif; }
+  .mode span { font-size: .9rem; opacity: .9; }
+  .mod-list { display: grid; gap: 10px; }
+  .mod {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; text-align: left;
+  }
+  .mod:hover { border-color: var(--accent); }
+  .mod .t { font-weight: 600; }
+  .mod .s { color: var(--muted); font-size: .88rem; }
+  .pill { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; font-size: .82rem; white-space: nowrap; }
+  .opt-row { display: flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--muted); font-size: .92rem; }
+  .foot { margin-top: 36px; color: var(--muted); font-size: .85rem; }
+
+  /* ---------- Quiz ---------- */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .link-btn { background: none; border: 0; color: var(--accent); padding: 6px 0; font-weight: 600; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+  .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .88rem; margin: 8px 0 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .q-mod { font-size: .82rem; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .q-text { font-size: 1.12rem; font-weight: 600; margin: 0 0 16px; }
+  .opts { display: grid; gap: 10px; }
+  .opt {
+    display: flex; gap: 12px; align-items: flex-start; text-align: left; width: 100%;
+    background: var(--bg); border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt .L { font-weight: 700; color: var(--muted); min-width: 1.4em; }
+  .opt.correct { background: var(--good-soft); border-color: var(--good); }
+  .opt.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .opt:disabled { cursor: default; color: var(--ink); }
+  .expl { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--warn-soft); color: var(--ink); border-left: 5px solid var(--warn); }
+  .expl b { display: block; margin-bottom: 2px; }
+  .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+  .btn { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); border-radius: 10px; padding: 10px 18px; font-weight: 600; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #0e1230; } }
+  .btn:disabled { opacity: .4; cursor: default; }
+  details.pal { margin-top: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+  details.pal summary { cursor: pointer; font-weight: 600; }
+  .grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .dot { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-size: .82rem; }
+  .dot.ok { background: var(--good-soft); border-color: var(--good); }
+  .dot.no { background: var(--bad-soft); border-color: var(--bad); }
+  .dot.cur { outline: 3px solid var(--accent); }
+
+  /* ---------- Results ---------- */
+  .score { text-align: center; padding: 26px 16px; }
+  .score .big { font-family: Georgia, serif; font-size: 3.4rem; font-weight: 700; }
+  .score p { color: var(--muted); margin: 6px 0 0; }
+  .breakdown { display: grid; gap: 8px; margin-top: 14px; }
+  .brow { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; font-size: .92rem; }
+  .brow .bar { grid-column: 1 / -1; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .rev { margin-top: 12px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--surface); }
+  .rev .ans { margin: 6px 0 0; font-size: .92rem; }
+  .tag-good { color: var(--good); font-weight: 600; }
+  .tag-bad { color: var(--bad); font-weight: 600; }
+  @media (prefers-reduced-motion: reduce) { .bar > i { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* =====================================================================
+   QUESTION BANK
+   Each question: [question text, [4 options], index of correct option, explanation]
+   7 modules x 20 questions = 140 questions
+   ===================================================================== */
+const MODULES = [
+{ name: "Module 1: Greedy & Divide and Conquer", qs: [
+["Which property must a problem exhibit for a greedy strategy to guarantee an optimal solution?",
+ ["Overlapping subproblems and optimal substructure","Greedy-choice property and optimal substructure","Independent subproblems and divide-and-conquer property","Subproblem graphs with directed acyclic dependencies"],1,
+ "Greedy works when local greedy choices lead to a global optimum (greedy-choice property) and optimal solutions contain optimal solutions to subproblems (optimal substructure)."],
+["What is the optimal time complexity of the greedy Fractional Knapsack algorithm for n items?",
+ ["O(n)","O(n log n)","O(n²)","O(W · n)"],1,
+ "Sorting items by value-to-weight ratio dominates the running time: O(n log n)."],
+["In Fractional Knapsack, items are sorted in descending order of which metric?",
+ ["Value (vᵢ)","Weight (wᵢ)","Ratio of value to weight (vᵢ/wᵢ)","Product of value and weight (vᵢ · wᵢ)"],2,
+ "Taking the highest value per unit weight first maximizes the value gained per unit of capacity used."],
+["Huffman coding generates which type of code?",
+ ["Fixed-length prefix code","Variable-length prefix code","Variable-length suffix code","Non-deterministic cyclic code"],1,
+ "Huffman gives variable-length binary codes where no codeword is a prefix of another, so decoding is unambiguous."],
+["When building a Huffman tree for n distinct characters, how many merge steps are performed?",
+ ["n","n − 1","2n","log₂ n"],1,
+ "Each merge reduces the number of trees by one; going from n trees to 1 takes exactly n − 1 merges."],
+["Which data structure is most appropriate for Huffman coding to achieve O(n log n) total running time?",
+ ["Min-heap (priority queue)","Max-heap","Doubly linked list","Red-Black tree"],0,
+ "A min-heap extracts the two lowest-frequency nodes in O(log n) per step, so n − 1 merges take O(n log n)."],
+["What is the worst-case time complexity of Karatsuba's integer multiplication for two n-digit numbers?",
+ ["Θ(n²)","Θ(n^log₂3) ≈ Θ(n^1.585)","Θ(n log n)","Θ(n^log₃2)"],1,
+ "Karatsuba makes 3 recursive multiplications of n/2-digit numbers: T(n) = 3T(n/2) + Θ(n) = Θ(n^log₂3)."],
+["Karatsuba multiplication reduces the number of recursive multiplications of n/2-digit sub-numbers from:",
+ ["4 to 3","4 to 2","3 to 2","2 to 1"],0,
+ "Standard D&C needs 4 sub-multiplications. Karatsuba computes (ad + bc) as (a+b)(c+d) − ac − bd, needing only 3."],
+["The standard recurrence relation for Karatsuba's algorithm is:",
+ ["T(n) = 4T(n/2) + Θ(n)","T(n) = 3T(n/2) + Θ(n)","T(n) = 2T(n/2) + Θ(n)","T(n) = 3T(n/3) + Θ(n)"],1,
+ "Three recursive calls on halves, plus linear work for additions, subtractions and shifts."],
+["Kadane's algorithm solves the Maximum Subarray problem in what time complexity?",
+ ["O(n log n)","O(n)","O(n²)","O(log n)"],1,
+ "It scans the array once, tracking the best subarray sum ending at each position."],
+["In the divide-and-conquer approach for Maximum Subarray, the crossing subarray must pass through:",
+ ["The midpoint of the current array slice","The maximum element of the array","The first index of the array","The last index of the array"],0,
+ "Any subarray crossing between the left and right halves must contain the midpoint elements."],
+["The divide-and-conquer approach to Maximum Subarray has a running time of:",
+ ["O(n)","O(n log n)","O(n²)","O(log n)"],1,
+ "T(n) = 2T(n/2) + O(n) = O(n log n)."],
+["Which step in algorithm development verifies that the algorithm produces the correct output for all valid inputs?",
+ ["Profiling","Proof of correctness","Complexity derivation","Asymptotic benchmarking"],1,
+ "Proof of correctness (e.g., loop invariants or induction) shows the algorithm terminates with correct output for every valid input."],
+["Loop invariants are typically verified using which three properties?",
+ ["Initialization, Maintenance, Termination","Base case, Induction, Contradiction","Soundness, Completeness, Compactness","Divide, Conquer, Combine"],0,
+ "Show the invariant holds before the first iteration (initialization), stays true each iteration (maintenance), and gives correctness on exit (termination)."],
+["Why does the greedy approach fail for the 0-1 Knapsack problem?",
+ ["It lacks optimal substructure","The greedy-choice property does not hold","The weights are integers","It cannot be represented as a recurrence"],1,
+ "Items can't be split, so picking the best ratio first can leave unused capacity and give a suboptimal total."],
+["In Huffman coding, characters with higher frequencies are assigned:",
+ ["Longer codewords","Shorter codewords","Codewords consisting entirely of 1s","Variable weights in an adjacency list"],1,
+ "Shorter codes for frequent symbols minimize the expected code length."],
+["If T(n) = 2T(n/2) + Θ(n), what is T(n) by the Master Theorem?",
+ ["Θ(n)","Θ(n log n)","Θ(n²)","Θ(log n)"],1,
+ "a = 2, b = 2, n^log_b(a) = n = Θ(f(n)), which is Case 2, giving Θ(n log n)."],
+["Which of the following is a key requirement of the Divide and Conquer strategy?",
+ ["Subproblems must heavily overlap","Subproblems must be independent instances of the same problem","Decisions made at each step must never be reconsidered","The search space must be pruned via bounding functions"],1,
+ "D&C splits a problem into non-overlapping, independent, smaller instances that are solved and combined."],
+["Which algorithmic paradigm makes a locally optimal choice at each step hoping to find a global optimum?",
+ ["Dynamic Programming","Greedy Technique","Backtracking","Branch and Bound"],1,
+ "Greedy repeatedly makes the best local choice without reconsidering past decisions."],
+["Karatsuba's algorithm is a classic example of which design technique?",
+ ["Greedy method","Dynamic Programming","Divide and Conquer","Branch and Bound"],2,
+ "It splits two n-digit numbers into smaller parts, multiplies recursively and combines algebraically."]
+]},
+
+{ name: "Module 2: DP, Backtracking & Branch and Bound", qs: [
+["Dynamic Programming is primarily applicable when a problem exhibits optimal substructure and:",
+ ["Greedy choice property","Overlapping subproblems","Disjoint independent subproblems","Non-deterministic state transitions"],1,
+ "When recursive subproblems repeat, their answers can be memoized or tabulated instead of recomputed."],
+["In Matrix Chain Multiplication, the recurrence for multiplying Aᵢ…Aⱼ involves minimizing which expression over split points k?",
+ ["m[i,k] + m[k+1,j] + p(i−1)·p(k)·p(j)","m[i,k] · m[k+1,j] + p(i−1)·p(k)·p(j)","m[i−1,k] + m[k,j] + p(i)·p(k)·p(j)","max(m[i,k], m[k+1,j]) + p(i−1)·p(k)·p(j)"],0,
+ "Cost of Aᵢ…Aₖ plus cost of Aₖ₊₁…Aⱼ plus p(i−1)·p(k)·p(j) scalar multiplications for the final product."],
+["What is the time complexity of solving Matrix Chain Multiplication for n matrices using dynamic programming?",
+ ["O(n²)","O(n³)","O(2ⁿ)","O(n log n)"],1,
+ "There are O(n²) subchains, and each tries O(n) split points: O(n³)."],
+["What is the length of the Longest Common Subsequence (LCS) of \"ABCBDAB\" and \"BDCABA\"?",
+ ["3","4","5","6"],1,
+ "Subsequences such as BCBA, BDAB and BCAB all have the maximal length 4."],
+["If two strings X and Y have lengths m and n, what is the space complexity of standard LCS tabulation?",
+ ["O(m + n)","O(m · n)","O(min(m, n))","O(2^min(m,n))"],1,
+ "The standard table is (m+1) × (n+1)."],
+["The 0-1 Knapsack problem with n items and capacity W can be solved by dynamic programming in time:",
+ ["O(n)","O(nW)","O(2ⁿ)","O(n log W)"],1,
+ "The DP table has (n+1) × (W+1) cells, each filled in O(1)."],
+["Why is the dynamic programming algorithm for 0-1 Knapsack considered pseudo-polynomial?",
+ ["It runs in polynomial time in n and the numeric value W, not the input length in bits","It only works for floating-point weights","It produces approximate results","It requires non-deterministic execution"],0,
+ "W takes only log₂W bits to write, so O(nW) is exponential in the input's bit-length."],
+["In Assembly Line Scheduling with 2 lines and n stations, what is the time complexity of the DP approach?",
+ ["O(n)","O(n²)","O(2ⁿ)","O(n log n)"],0,
+ "Each station needs O(1) work across the 2 lines, so Θ(n) overall."],
+["Solving the Traveling Salesperson Problem with the Bellman-Held-Karp DP algorithm takes:",
+ ["O(n!)","O(n² · 2ⁿ)","O(n³)","O(2ⁿ)"],1,
+ "There are O(n · 2ⁿ) states (subset S, vertex v), each with O(n) transitions: O(n² 2ⁿ)."],
+["Backtracking explores the search space using which fundamental traversal method?",
+ ["Breadth-First Search (BFS)","Depth-First Search (DFS) with pruning","Uniform-Cost Search","Best-First Search"],1,
+ "Backtracking walks the state-space tree depth-first and prunes branches as soon as constraints are violated."],
+["In the N-Queens problem, two queens at (i, j) and (k, l) conflict diagonally if:",
+ ["i + j = k + l or i − j = k − l","i = k","j = l","i · j = k · l"],0,
+ "Same diagonal means |i − k| = |j − l|, i.e. i + j = k + l or i − j = k − l."],
+["What is the maximum number of queens that can be placed on an 8×8 chessboard such that no two queens attack each other?",
+ ["4","6","8","16"],2,
+ "On an N×N board you can place N non-attacking queens, one in every row and column. So 8 for 8×8. (The source PDF says \"minimum\", but the intended answer is 8, the maximum.)"],
+["The Graph Coloring problem asks for the minimum number of colors so that no two adjacent vertices share a color. This number is called:",
+ ["Genus","Chromatic number","Independence number","Clique number"],1,
+ "The chromatic number χ(G) is the smallest number of colors for a proper vertex coloring."],
+["In Subset Sum via backtracking (positive integers sorted ascending), which condition prunes a branch?",
+ ["Current sum + next element > Target sum","Current sum + remaining sum < Target sum","Both of the first two options","Current sum = Target sum"],2,
+ "Prune if adding the next element already overshoots the target, or if even all remaining elements can't reach it."],
+["Branch and Bound is primarily applied to which class of problems?",
+ ["Discrete optimization problems","Sorting problems","Deterministic parsing","Continuous convex optimization"],0,
+ "B&B is designed for NP-hard combinatorial and discrete optimization problems."],
+["FIFO Branch and Bound maintains the live-node list using which data structure?",
+ ["Stack","Queue","Min-priority heap","Hash map"],1,
+ "A plain queue gives a breadth-first exploration of the state-space tree."],
+["LIFO Branch and Bound implements the state-space tree traversal using which data structure?",
+ ["Queue","Stack","Min-heap","Circular deque"],1,
+ "Live nodes sit on a stack, so the tree is explored depth-first."],
+["In Least-Cost Branch and Bound (LC-BB), how is the next node to expand selected?",
+ ["Most recently generated node","Node with the most promising bound value","Node chosen uniformly at random","First node inserted into the tree"],1,
+ "LC-BB uses a priority queue to always expand the live node with the best bound."],
+["In Branch and Bound for a maximization problem, a node can be pruned if its upper bound is:",
+ ["Greater than the current best lower bound","Less than or equal to the current best lower bound","Equal to positive infinity","Strictly increasing along the path"],1,
+ "If the best value reachable from a node doesn't beat the best known feasible solution, it can't contain a better optimum."],
+["In the Job Assignment problem solved via Branch and Bound, what is commonly used as a lower bound for a partial assignment?",
+ ["Cost of assigned jobs + minimum potential cost for unassigned jobs","Maximum possible cost among all remaining jobs","Total cost of all available jobs","Average cost of the matrix"],0,
+ "Cost so far plus the row-minimum costs of the remaining workers is an admissible lower bound."]
+]},
+
+{ name: "Module 3: String Matching", qs: [
+["What is the worst-case running time of Naive String Matching for text length n and pattern length m?",
+ ["O(n + m)","O((n − m + 1) · m)","O(n log m)","O(m²)"],1,
+ "There are n − m + 1 shifts and up to m comparisons per shift."],
+["In the KMP algorithm, what does the π (prefix) table store?",
+ ["The frequency of characters in the pattern","The length of the longest proper prefix of P[1..q] that is also a suffix of P[1..q]","The ASCII hash value of each character","The last seen position of each character in the text"],1,
+ "π[q] is the length of the longest proper prefix of P[1..q] that is also a suffix of it."],
+["What is the time complexity of the KMP preprocessing phase for a pattern of length m?",
+ ["O(m²)","O(m)","O(m log m)","O(n)"],1,
+ "Computing π takes amortized O(1) per pattern character, so Θ(m)."],
+["What is the matching time complexity of KMP on a text of length n?",
+ ["O(n)","O(n log n)","O(n · m)","O(m)"],0,
+ "The text pointer never backtracks, so matching is Θ(n)."],
+["What is the prefix function array for the pattern \"ABABAC\" (values for each prefix length)?",
+ ["[0, 0, 1, 2, 3, 0]","[0, 1, 2, 3, 4, 0]","[0, 0, 1, 1, 2, 0]","[0, 0, 0, 1, 2, 3]"],0,
+ "Prefixes A, AB, ABA, ABAB, ABABA, ABABAC have longest border lengths 0, 0, 1, 2, 3, 0."],
+["Which technique does Rabin-Karp use to compare pattern and text windows in expected O(1) time?",
+ ["Rolling hash","Suffix links","Dynamic programming table","Binary search"],0,
+ "The next window's hash is computed from the current one by removing the outgoing character and adding the incoming one."],
+["What is the worst-case time complexity of the Rabin-Karp algorithm?",
+ ["O(n + m)","O((n − m + 1) · m)","O(n log m)","O(m log n)"],1,
+ "If hash collisions happen at every shift, each shift needs a full O(m) check."],
+["What causes the worst-case running time in Rabin-Karp?",
+ ["Hash collisions occurring frequently at every shift","Modulo arithmetic overflow","Alphabet size exceeding 2³²","Text length being a power of two"],0,
+ "Frequent spurious hits force full verification at all shifts, which cancels the benefit of hashing."],
+["In Rabin-Karp, if the hash of the current text window equals the hash of the pattern, what must the algorithm do?",
+ ["Immediately return a match without checking","Perform character-by-character verification to rule out spurious hits","Rehash the entire text from the beginning","Shift the window by m positions"],1,
+ "Different strings can share a hash modulo q, so a hash match must be verified."],
+["A suffix tree for a string of length n (with a unique end marker) contains how many leaves?",
+ ["n","2n","n(n + 1)/2","2ⁿ"],0,
+ "Each of the n suffixes ends at its own leaf."],
+["What is the total number of nodes (internal + leaves) in a compact suffix tree of a string of length n?",
+ ["Exactly n²","At most 2n − 1","At most n!","Exactly n log n"],1,
+ "Every internal node has at least 2 children, so with n leaves there are at most n − 1 internal nodes, giving at most 2n − 1."],
+["Using Ukkonen's algorithm, what is the time to construct a suffix tree for a string of length n (constant alphabet)?",
+ ["O(n log n)","O(n)","O(n²)","O(n³)"],1,
+ "Ukkonen builds the tree online in linear time using suffix links and implicit extension rules."],
+["Once a suffix tree of text T (length n) is built, how fast can you decide whether pattern P (length m) occurs in T?",
+ ["O(m)","O(n)","O(n + m)","O(log n)"],0,
+ "Walk down from the root matching P along edges: O(m)."],
+["In KMP the text pointer i never decrements. What happens to the pattern pointer j on a mismatch?",
+ ["Resets to 0 always","Advances to j + 1","Falls back to π[j]","Stays unchanged"],2,
+ "j falls back to π[j], aligning the longest matched border without re-examining text characters."],
+["Why is a unique termination character (e.g., \"$\") appended to a string when building a suffix tree?",
+ ["To ensure no suffix is a proper prefix of another suffix","To reset the hashing accumulator","To make the string length a prime number","To handle escape characters"],0,
+ "An end marker not in the alphabet makes every suffix end at an explicit leaf, not mid-edge."],
+["Which problem cannot be solved in linear time using a generalized suffix tree?",
+ ["Finding the longest common substring of two strings","Finding the longest repeated substring in a string","Generating all permutations of an arbitrary string","Locating all occurrences of a pattern in a text"],2,
+ "A string of length n has n! permutations, so linear-time generation is impossible due to output size."],
+["For text \"AAAAAA\" and pattern \"AAA\", how many total character comparisons does the Naive algorithm perform?",
+ ["12","6","18","9"],0,
+ "There are 6 − 3 + 1 = 4 shifts and all 3 characters match at each: 4 × 3 = 12."],
+["In Rabin-Karp, the rolling hash moves from window T[s..s+m−1] to T[s+1..s+m] in time:",
+ ["O(1)","O(m)","O(log m)","O(n)"],0,
+ "Subtract the leading term and add the new character: constant arithmetic operations."],
+["The prefix function for KMP satisfies which bound?",
+ ["π[q] ≤ q","π[q] < q","π[q] = q + 1","π[q] ≥ m"],1,
+ "π[q] is the length of a proper prefix, so it must be strictly less than q."],
+["Which string matching algorithm preprocesses the text rather than the pattern?",
+ ["Knuth-Morris-Pratt","Rabin-Karp","Suffix Tree","Naive String Matching"],2,
+ "A suffix tree is built from the text in O(n), then each pattern query takes O(m)."]
+]},
+
+{ name: "Module 4: Graph Algorithms", qs: [
+["What is the time complexity of the Bellman-Ford algorithm on a graph G = (V, E)?",
+ ["O(V · E)","O(V²)","O(E + V log V)","O(V³)"],0,
+ "It relaxes all E edges in |V| − 1 passes."],
+["How does Bellman-Ford detect a negative-weight cycle reachable from the source?",
+ ["By checking if any edge can still be relaxed after |V| − 1 passes","By inspecting if any vertex has indegree 0","By counting cycles using depth-first search","If the distance to the destination is negative"],0,
+ "Shortest simple paths have at most |V| − 1 edges, so a further relaxation means a negative cycle exists."],
+["The Floyd-Warshall algorithm is designed to solve which problem?",
+ ["Single-source shortest paths on DAGs","All-pairs shortest paths","Maximum flow in a planar graph","Minimum spanning tree"],1,
+ "It uses dynamic programming to find shortest paths between all pairs of vertices."],
+["What is the running time of the Floyd-Warshall algorithm for a graph with V vertices?",
+ ["Θ(V · E)","Θ(V³)","Θ(V² log V)","Θ(E log V)"],1,
+ "Three nested loops over 1..|V| with constant work inside."],
+["What is the core recurrence in Floyd-Warshall for d(k)ᵢⱼ?",
+ ["min( d(k−1)ᵢⱼ , d(k−1)ᵢₖ + d(k−1)ₖⱼ )","min( d(k−1)ᵢⱼ , d(k)ᵢₖ + d(k)ₖⱼ )","max( d(k−1)ᵢⱼ , d(k−1)ᵢₖ + d(k−1)ₖⱼ )","d(k−1)ᵢₖ + d(k−1)ₖⱼ"],0,
+ "The best path from i to j using intermediates up to k either avoids k or goes through k."],
+["In a flow network, which condition says the net flow out of a node (other than source s and sink t) must equal zero?",
+ ["Capacity constraint","Flow conservation","Skew symmetry","Cut minimality"],1,
+ "Flow entering any intermediate vertex equals the flow leaving it."],
+["The Max-Flow Min-Cut Theorem establishes that:",
+ ["The value of the maximum flow equals the capacity of the minimum cut","The minimum cut value is strictly greater than the maximum flow","Every cut separates the source from all other vertices","The maximum flow is bounded by the maximum node degree"],0,
+ "Maximum s-t flow equals the minimum capacity among all s-t cuts."],
+["The Ford-Fulkerson method is guaranteed to terminate only if which condition holds on edge capacities?",
+ ["Capacities are rational (or integer) numbers","Capacities are irrational","Capacities form an alternating tree","All capacities are distinct"],0,
+ "With irrational capacities, poor path choices can loop forever, converging to a value below the max flow."],
+["What is the upper bound on the running time of basic Ford-Fulkerson with integer capacities (|f*| is the max flow)?",
+ ["O(E · |f*|)","O(V²E)","O(V · E²)","O(V³)"],0,
+ "Each augmenting path adds at least 1 unit of flow and costs O(E) to find."],
+["The Edmonds-Karp algorithm improves Ford-Fulkerson by selecting augmenting paths using:",
+ ["Depth-First Search (longest path)","Breadth-First Search (shortest path by number of edges)","Priority queue by highest residual capacity","Topological sort"],1,
+ "BFS picks the augmenting path with the fewest edges, which guarantees polynomial convergence."],
+["What is the asymptotic time complexity of Edmonds-Karp?",
+ ["O(V · E²)","O(V² · E)","O(V³)","O(E log V)"],0,
+ "O(VE) augmentations, each found by BFS in O(E)."],
+["In Push-Relabel, which operation is performed when a vertex u has excess flow and an admissible edge to neighbor v?",
+ ["Relabel","Push","Lift","Augment"],1,
+ "Excess flow is pushed downhill along the admissible edge."],
+["In Push-Relabel, an edge (u, v) is admissible for a push if:",
+ ["c_f(u,v) > 0 and h(u) = h(v) + 1","c_f(u,v) > 0 and h(u) = h(v)","c_f(u,v) = 0 and h(u) > h(v)","h(u) < h(v)"],0,
+ "The edge needs residual capacity, and the sender must be exactly one height unit above the receiver."],
+["What is the time complexity of the generic Push-Relabel algorithm?",
+ ["O(V² · E)","O(V³)","O(E log V)","O(V · E)"],0,
+ "O(V²) relabels, O(VE) saturating pushes and O(V²E) non-saturating pushes give O(V²E)."],
+["Maximum bipartite matching on G = (L ∪ R, E) can be transformed into max-flow with capacities:",
+ ["All set to 1","Set to the degrees of the vertices","Equal to |V|","Dependent on vertex indices"],0,
+ "Connect s to L, R to t, and give every edge capacity 1 to enforce one-to-one matching."],
+["What is the time complexity of finding a maximum bipartite matching using Ford-Fulkerson / Edmonds-Karp style augmentation on the unit network?",
+ ["O(V · E)","O(V² · E)","O(E · √V)","O(V + E)"],0,
+ "Max flow is at most |V|/2 and each augmenting path takes O(E): O(VE). (O(E√V) is Hopcroft-Karp, a different algorithm.)"],
+["In a residual network G_f, what does a backward edge (v, u) represent?",
+ ["The ability to cancel existing flow along (u, v)","A physical edge existing in the original network in reverse","An anti-parallel cycle in G","Infinite remaining capacity"],0,
+ "Its residual capacity equals f(u,v), letting augmenting paths cancel or redirect previously routed flow."],
+["What is the maximum number of relabel operations on any single vertex u ∈ V − {s, t} in Push-Relabel?",
+ ["2|V| − 1","|V|","|E|","2|E|"],0,
+ "Heights only increase and are bounded above by 2|V| − 1."],
+["How does Floyd-Warshall detect a negative-weight cycle?",
+ ["If d[i][i] < 0 for any vertex i","If any entry becomes undefined","If the matrix does not converge within |V| iterations","If all entries in a row are negative"],0,
+ "d[i][i] is the shortest cycle through i, and a negative value confirms a negative-weight cycle."],
+["If all capacities in a flow network are integers, the Integrality Theorem guarantees that:",
+ ["The maximum flow value and the flow across every edge can be integers","The min-cut consists solely of integer numbers of vertices","Every augmenting path has unit length","Edmonds-Karp runs in linear time"],0,
+ "An integer-capacity network always has a maximum flow with an integer value on every edge."]
+]},
+
+{ name: "Module 5: Geometric Algorithms", qs: [
+["The cross product (p1 − p0) × (p2 − p0) is positive. What does this say about the turn from p0→p1 to p0→p2?",
+ ["Counterclockwise (left turn)","Clockwise (right turn)","Collinear","Opposite direction (180°)"],0,
+ "In the standard Cartesian plane, a positive cross product means p0p2 is counterclockwise (a left turn) from p0p1."],
+["Two line segments p1p2 and p3p4 intersect if and only if:",
+ ["Each segment straddles the line containing the other (or an endpoint lies on the other segment)","Their bounding boxes do not overlap","They have identical slopes","The cross product of their endpoints is zero"],0,
+ "Each segment must cross the supporting line of the other, including boundary cases where an endpoint lies on a segment."],
+["The cross product of 2D vectors a = (x1, y1) and b = (x2, y2) is computed as:",
+ ["x1·y2 − x2·y1","x1·x2 + y1·y2","x1·y1 − x2·y2","x1·y2 + x2·y1"],0,
+ "It is the determinant of the 2×2 matrix [a, b]."],
+["In the Bentley-Ottmann sweep-line algorithm, which data structure typically represents the event queue?",
+ ["Priority queue","Stack","FIFO queue","Hash set"],0,
+ "Events (endpoints and discovered intersections) are processed in coordinate order via a min-priority queue."],
+["In Bentley-Ottmann, the sweep-line status stores active segments sorted by their:",
+ ["y-coordinates at the current sweep-line position","Total segment lengths","Initial angles relative to the origin","Slopes in descending order"],0,
+ "A balanced search tree keeps the segments crossing the sweep line ordered vertically."],
+["What is the time complexity of Bentley-Ottmann for n segments with k intersection points?",
+ ["O((n + k) log n)","O(n²)","O(n log n + k)","O(k log n)"],0,
+ "There are 2n + k events, and each costs O(log n) in the status structure."],
+["The Convex Hull of a set of points Q is defined as:",
+ ["The smallest convex polygon containing all points in Q","The minimum spanning tree connecting points in Q","The circle of minimum radius enclosing all points","The union of all pairwise line segments between points"],0,
+ "CH(Q) is the unique smallest convex set (a polygon in 2D) containing Q."],
+["In Graham's Scan, what is the initial step for sorting points?",
+ ["Find the point with the lowest y-coordinate and sort the remaining points by polar angle","Sort all points by x-coordinate in descending order","Sort points by Manhattan distance from origin","Project points onto a random 1D line"],0,
+ "p0 is the bottom-most point; the others are sorted counterclockwise by polar angle around p0."],
+["What is the time complexity of Graham's Scan for n points?",
+ ["O(n log n)","O(n²)","O(n)","O(n√n)"],0,
+ "Sorting by angle is O(n log n); the stack scan is amortized O(n)."],
+["What type of turn must every three consecutive vertices on a counterclockwise convex hull make?",
+ ["Left turn (counterclockwise)","Right turn (clockwise)","Collinear turn","Angle of exactly 90°"],0,
+ "Walking around a convex polygon counterclockwise means consistent left turns."],
+["Which data structure does Graham's Scan use to maintain candidate hull vertices?",
+ ["Stack","Queue","Binary search tree","Disjoint set union"],0,
+ "Candidates are pushed on a stack and the top is popped whenever a non-left turn appears."],
+["Jarvis' March (Gift Wrapping) has a running time of:",
+ ["O(n · h), where h is the number of hull vertices","O(n log n)","O(n² log n)","O(h log n)"],0,
+ "Each of the h hull vertices is found by scanning all n points."],
+["When is Jarvis' March asymptotically faster than Graham's Scan?",
+ ["When h = o(log n), i.e. the hull has very few vertices","When all n points lie on the hull (h = n)","When n is very small regardless of h","It is never faster than Graham's Scan"],0,
+ "O(nh) beats O(n log n) exactly when h is asymptotically smaller than log n."],
+["In Jarvis' March, how is the next hull vertex chosen from the current vertex p?",
+ ["The point q with the smallest polar angle, so that every other point lies on or to one consistent side of line pq","The point closest in Euclidean distance","The point with the largest x-coordinate","The point forming the median angle"],0,
+ "The next hull vertex is the extreme point such that all other points lie on the same side of the directed line pq (the interior side)."],
+["What is the proven lower bound for finding the convex hull of n points in 2D under the algebraic decision tree model?",
+ ["Ω(n log n)","Ω(n)","Ω(n²)","Ω(log n)"],0,
+ "Sorting reduces to convex hull in linear time, so the Ω(n log n) sorting bound carries over."],
+["Sorting reduces to 2D Convex Hull by mapping each real number xᵢ to which point on a parabola?",
+ ["(xᵢ, xᵢ²)","(xᵢ, √xᵢ)","(xᵢ, 1/xᵢ)","(xᵢ, log xᵢ)"],0,
+ "y = x² is strictly convex, so all points lie on the hull, appearing in sorted order of x."],
+["Which event points are added to the event queue in the Bentley-Ottmann line sweep?",
+ ["Left endpoints, right endpoints, and newly discovered intersection points","Only intersection points","Midpoints of all segments","Segment endpoints only"],0,
+ "Endpoints are inserted initially; intersections between newly adjacent segments are added dynamically."],
+["During the Graham's Scan stack update, what happens if the next point forms a right turn with the top two stack points?",
+ ["The top point is popped from the stack","The next point is discarded permanently","The entire stack is emptied","The scan terminates"],0,
+ "A right (non-left) turn means the top vertex is not on the hull, so it is popped."],
+["If three 2D points p1, p2, p3 are collinear, what is the value of (p2 − p1) × (p3 − p1)?",
+ ["0","1","−1","The slope of the line"],0,
+ "The cross product is the signed area of the parallelogram, which is zero for collinear vectors."],
+["The sweep-line technique is effective because it reduces a 2-dimensional geometric problem into:",
+ ["A sequence of 1-dimensional dynamic problems","A graph coloring problem","A matrix diagonalization task","A 3-dimensional polyhedral search"],0,
+ "Sweeping lets 2D relationships be handled as a 1D dynamic set changing at discrete event coordinates."]
+]},
+
+{ name: "Module 6: Randomized Algorithms", qs: [
+["What is the expected time complexity of Randomized QuickSort on n elements?",
+ ["O(n log n)","O(n²)","O(n)","O(log n)"],0,
+ "Random pivots give balanced partitions on average for any input."],
+["What is the worst-case running time of Randomized QuickSort?",
+ ["Θ(n²)","Θ(n log n)","Θ(n³)","Θ(n)"],0,
+ "If random choices keep picking the min or max, splits are n − 1 and 0, giving Θ(n²)."],
+["What is the primary purpose of selecting the pivot uniformly at random in Randomized QuickSort?",
+ ["To get expected balanced splits independent of input ordering","To reduce memory usage to O(1)","To eliminate recursion","To avoid comparing elements"],0,
+ "Randomization removes worst-case patterns tied to specific input orders."],
+["What is the probability that two specific elements zᵢ and zⱼ (zᵢ < zⱼ) are compared during Randomized QuickSort?",
+ ["2 / (j − i + 1)","1 / (j − i + 1)","1 / n","2 / n"],0,
+ "They are compared iff zᵢ or zⱼ is the first pivot chosen among zᵢ..zⱼ, which has probability 2/(j − i + 1)."],
+["In the Hiring Problem with candidates in random order, what is the expected number of hires?",
+ ["ln n + O(1)","n / 2","√n","O(1)"],0,
+ "It equals the harmonic number Hₙ = Σ 1/i = ln n + O(1)."],
+["In the Hiring Problem, what is the probability that candidate i is hired?",
+ ["1/i","1/n","i/n","1/2"],0,
+ "Candidate i is hired iff they are the best among the first i, which has probability 1/i."],
+["An algorithm that always returns a correct answer but has a randomized running time is called:",
+ ["Las Vegas algorithm","Monte Carlo algorithm","Atlantic City algorithm","Deterministic heuristic"],0,
+ "Las Vegas algorithms are always correct, and only their running time is random."],
+["An algorithm with a deterministic polynomial running time but a bounded probability of an incorrect answer is called:",
+ ["Monte Carlo algorithm","Las Vegas algorithm","Simplex algorithm","Approximation algorithm"],0,
+ "Monte Carlo algorithms have fixed runtime bounds and allow a small error probability."],
+["Karger's randomized algorithm finds the global minimum cut using which primary operation?",
+ ["Random edge contraction","Random vertex deletion","Breadth-first search","Alternating tree augmentation"],0,
+ "It repeatedly contracts uniformly random edges."],
+["In Karger's algorithm, edge contraction continues until how many vertices remain?",
+ ["2","1","0","log n"],0,
+ "When 2 super-vertices remain, the edges between them form the candidate min-cut."],
+["What is the lower bound on the success probability of a single run of Karger's algorithm on a graph with n vertices?",
+ ["2 / (n(n − 1))","1 / n","1/2","log n / n"],0,
+ "The chance that no min-cut edge is contracted over n − 2 steps is at least 1 / C(n,2) = 2/(n(n−1))."],
+["How many independent runs of Karger's algorithm are needed to find the global min-cut with probability at least 1 − 1/n?",
+ ["Θ(n² ln n)","Θ(n ln n)","Θ(n³)","Θ(2ⁿ)"],0,
+ "(1 − 2/n²)^(Θ(n² ln n)) ≤ 1/n."],
+["Karger-Stein's recursive contraction contracts down to n/√2 vertices and recurses twice. What is the time complexity of a single run?",
+ ["O(n² log n)","O(n⁴)","O(n³)","O(n² log³ n)"],0,
+ "T(n) = 2T(n/√2) + O(n²) is Case 2 of the Master Theorem: O(n² log n). Boosting success probability to high probability takes O(log² n) repetitions, giving O(n² log³ n) overall."],
+["In the Hiring Problem with interview cost cᵢ and hiring cost cₕ, the total expected cost is:",
+ ["O(cᵢ · n + cₕ · ln n)","O(cᵢ · ln n + cₕ · n)","O((cᵢ + cₕ) · n)","O((cᵢ + cₕ) · ln n)"],0,
+ "All n candidates are interviewed, but only about ln n are hired in expectation."],
+["Which property lets us sum expected values of indicator random variables without requiring independence?",
+ ["Linearity of Expectation","Law of Total Probability","Markov's Inequality","Central Limit Theorem"],0,
+ "E[ΣXᵢ] = ΣE[Xᵢ] holds whether or not the variables are independent."],
+["When contracting edge (u, v) in Karger's algorithm, what happens to self-loops created by other edges between u and v?",
+ ["They are removed","They are retained and assigned double weight","They are redirected to the source","The algorithm aborts"],0,
+ "Such edges become internal to the merged vertex and can't cross the cut, so they are discarded."],
+["If a randomized algorithm has failure probability ε ≤ 1/2, repeating it k independent times reduces the failure probability to at most:",
+ ["εᵏ","k · ε","1 − kε","ε / k"],0,
+ "All k independent runs must fail, so the probabilities multiply."],
+["Randomized QuickSort is an example of which type of randomized algorithm?",
+ ["Las Vegas","Monte Carlo","Deterministic","Heuristic"],0,
+ "The output is always correctly sorted, and only the running time is random."],
+["What is the maximum number of distinct minimum cuts any connected undirected graph on n vertices can have?",
+ ["C(n, 2) = n(n − 1)/2","2ⁿ","n!","n − 1"],0,
+ "Follows from Karger's analysis, and is attained by the cycle graph Cₙ."],
+["In the online secretary problem, the optimal strategy is to reject the first n/e candidates and then hire the first better one. The success probability is approximately:",
+ ["1/e ≈ 37%","50%","1/(2e) ≈ 18%","ln 2 ≈ 69%"],0,
+ "The optimal stopping rule succeeds with probability about 1/e ≈ 36.8%."]
+]},
+
+{ name: "Module 7: Complexity Classes & Approximation", qs: [
+["The complexity class P consists of all decision problems solvable by a:",
+ ["Deterministic Turing machine in polynomial time","Non-deterministic Turing machine in polynomial time","Deterministic Turing machine in exponential time","Non-deterministic Turing machine in logarithmic space"],0,
+ "P is the set of languages decidable by a deterministic TM in O(nᵏ) steps for some constant k."],
+["The class NP is formally defined as the set of languages for which a candidate solution can be:",
+ ["Verified by a deterministic algorithm in polynomial time","Solved by a deterministic algorithm in polynomial time","Approximated within a constant factor in polynomial time","Verified in logarithmic space"],0,
+ "NP problems have certificates that can be verified deterministically in polynomial time."],
+["A decision problem L is NP-complete if:",
+ ["L ∈ NP and every problem in NP is polynomial-time reducible to L","L ∈ P and L is NP-hard","Every problem in P can be reduced to L in logarithmic time","L cannot be verified in polynomial time"],0,
+ "NP-complete means in NP and NP-hard."],
+["Which theorem established that the Boolean Satisfiability Problem (SAT) is NP-complete?",
+ ["Cook-Levin Theorem","Church-Turing Thesis","Master Theorem","Karp-Tarjan Theorem"],0,
+ "Cook-Levin showed any NP verifier can be encoded as a Boolean formula."],
+["If A ≤ₚ B (A is polynomial-time reducible to B) and B ∈ P, what does this imply?",
+ ["A ∈ P","A is NP-complete","B is NP-hard","P = NP"],0,
+ "Run the reduction, then B's polynomial-time solver: A is solvable in polynomial time."],
+["Which of the following problems is known to be in P?",
+ ["2-SAT","3-SAT","Hamiltonian Cycle","Vertex Cover"],0,
+ "2-SAT is solvable in O(V + E) via strongly connected components of the implication graph. The other three are NP-complete."],
+["An independent set in an undirected graph G = (V, E) is a subset S ⊆ V such that:",
+ ["No two vertices in S are joined by an edge","Every vertex in V \\ S is adjacent to all vertices in S","Every pair of vertices in S has an edge","S forms a simple cycle"],0,
+ "An independent set has no mutually adjacent pairs."],
+["For a graph G = (V, E), a set S ⊆ V is an independent set if and only if its complement V \\ S is a:",
+ ["Vertex Cover","Clique","Spanning Tree","Dominating Set"],0,
+ "If no edge has both endpoints in S, every edge has at least one endpoint in V \\ S."],
+["A clique in an undirected graph G = (V, E) is a subset V′ ⊆ V such that:",
+ ["Every pair of distinct vertices in V′ is connected by an edge","No two vertices in V′ are connected by an edge","Vertices in V′ form a path of length |V′|","V′ induces a bipartite subgraph"],0,
+ "A clique is an induced complete subgraph."],
+["A subset V′ is a clique in G if and only if V′ is:",
+ ["An independent set in the complement graph Ḡ","A vertex cover in G","An Eulerian circuit in Ḡ","A minimum cut in G"],0,
+ "Vertices fully connected in G have no edges between them in the complement graph."],
+["An algorithm for a minimization problem has approximation ratio ρ(n) if, for every input of size n, the solution cost C satisfies:",
+ ["max(C/C*, C*/C) ≤ ρ(n)","C − C* ≤ ρ(n)","C ≤ ρ(n) + C*","C* ≤ ρ(n) · ln C"],0,
+ "The standard definition bounds the relative cost ratio for both minimization and maximization."],
+["What is the approximation ratio of the standard greedy maximal-matching algorithm for Vertex Cover?",
+ ["2","1.5","ln |V|","1 + ε"],0,
+ "It takes both endpoints of every edge in a maximal matching M, so the cover has size 2|M| ≤ 2|C*|."],
+["Why does the maximal-matching-based Vertex Cover approximation achieve ratio 2?",
+ ["Any valid cover must include at least one endpoint of every matching edge, and the algorithm takes both","The chosen vertices form an exact Hamiltonian path","The LP relaxation always has half-integral solutions","The chosen edges form a tree with 2n vertices"],0,
+ "Matching edges share no vertices, so OPT needs at least |M| vertices, while the algorithm uses exactly 2|M|."],
+["The greedy approximation algorithm for Set Cover with universe U achieves a ratio of:",
+ ["H(|U|) = Σ(1/k) ≤ ln|U| + 1","2","O(√|U|)","|U| / 2"],0,
+ "It is bounded by the |U|-th harmonic number."],
+["In each iteration, the greedy Set Cover algorithm selects the subset that:",
+ ["Minimizes cost per newly covered element","Contains the largest number of total elements","Has the minimum overlap with previously picked subsets","Has the smallest index in the input list"],0,
+ "It picks the set minimizing cost(S) / |S \\ Covered|."],
+["For metric TSP (triangle inequality holds), Christofides' algorithm achieves an approximation ratio of:",
+ ["1.5 (3/2)","2.0","ln n","1 + ε"],0,
+ "MST (≤ OPT) plus a min-weight perfect matching on odd-degree vertices (≤ 0.5·OPT) gives a tour within 1.5·OPT."],
+["The 2-approximation algorithm for metric TSP constructs a tour based on:",
+ ["Doubling the Minimum Spanning Tree and taking shortcuts","Solving linear programming relaxations iteratively","Selecting the nearest neighbor greedily at each step","Constructing a maximum bipartite matching"],0,
+ "Doubling the MST gives an Eulerian circuit of cost ≤ 2·OPT, and shortcuts (triangle inequality) turn it into a Hamiltonian cycle."],
+["If the triangle inequality does not hold (general TSP), what can be said about polynomial-time approximation algorithms?",
+ ["No polynomial-time algorithm can achieve any constant approximation factor unless P = NP","There exists a 2-approximation algorithm","It can be approximated within O(log n)","A PTAS always exists"],0,
+ "Any polynomial-time α-approximation for general TSP would decide Hamiltonian Cycle in polynomial time."],
+["A PTAS produces a (1 + ε)-approximate solution in time polynomial in n for any fixed ε > 0. If the running time is also polynomial in 1/ε, it is called:",
+ ["Fully Polynomial-Time Approximation Scheme (FPTAS)","Quasi-Polynomial Time Approximation Scheme (QPTAS)","Constant Factor Scheme (CFS)","Linear Time Heuristic (LTH)"],0,
+ "An FPTAS is polynomial in both n and 1/ε."],
+["What is the current consensus regarding the relationship between P and NP?",
+ ["It is widely conjectured that P ≠ NP, but this is unproven","It has been proven that P = NP","It has been proven that P ∩ NP = ∅","Every problem in NP can be solved in O(n³) time"],0,
+ "Most researchers believe P ≠ NP, but a proof remains an open problem."]
+]}
+];
+
+/* =====================================================================
+   APP STATE AND HELPERS
+   ===================================================================== */
+const app = document.getElementById("app");
+let quiz = null; // active quiz: { title, items, picks, idx, retryable }
+
+// Small DOM helper: el("div", "cls", "text") -> element (uses textContent, so no HTML injection or "<" problems)
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+// Fisher-Yates shuffle (returns a new array)
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Build a flat list of question objects, optionally shuffling option order.
+// Questions with options that refer to other options (e.g. "Both of the first two") are never shuffled.
+function buildItems(pairs, shuffleOpts) {
+  return pairs.map(([m, q]) => {
+    const [text, opts, ans, expl] = q;
+    const fixed = opts.some(o => /first two/i.test(o));
+    let order = opts.map((_, i) => i);
+    if (shuffleOpts && !fixed) order = shuffle(order);
+    return {
+      mod: MODULES[m].name,
+      text,
+      opts: order.map(i => opts[i]),
+      ans: order.indexOf(ans), // position of the correct option after shuffling
+      expl
+    };
+  });
+}
+
+// All (moduleIndex, question) pairs for a module or for the whole bank
+function pairsFor(moduleIdx) {
+  const out = [];
+  MODULES.forEach((mod, m) => {
+    if (moduleIdx === "all" || moduleIdx === m) mod.qs.forEach(q => out.push([m, q]));
+  });
+  return out;
+}
+
+/* =====================================================================
+   HOME SCREEN
+   ===================================================================== */
+function showHome() {
+  quiz = null;
+  app.replaceChildren();
+
+  const hero = el("div", "hero");
+  hero.append(el("h1", "", "Design & Analysis of Algorithms: Quiz Prep"));
+  hero.append(el("p", "", "140 questions across 7 modules. No timer. You see the explanation right after each answer."));
+  app.append(hero);
+
+  // Options row
+  const optRow = el("label", "opt-row");
+  const cb = el("input"); cb.type = "checkbox"; cb.id = "shuf"; cb.checked = true;
+  optRow.append(cb, document.createTextNode("Shuffle answer options (so you learn the answer, not the position)"));
+  app.append(optRow);
+
+  const doShuffle = () => cb.checked;
+
+  // Main modes
+  app.append(el("h2", "section-title", "Choose a quiz"));
+  const row = el("div", "mode-row");
+
+  const full = el("button", "mode");
+  full.append(el("b", "", "Full quiz: all 140"), el("span", "", "Every question, module 1 to 7 in order"));
+  full.onclick = () => startQuiz("Full quiz (140 questions)", buildItems(pairsFor("all"), doShuffle()));
+
+  const mock = el("button", "mode alt");
+  mock.append(el("b", "", "Random mock test: 70"), el("span", "", "70 random questions drawn from all modules"));
+  mock.onclick = () => startQuiz("Random mock test (70 questions)", buildItems(shuffle(pairsFor("all")).slice(0, 70), doShuffle()));
+
+  row.append(full, mock);
+  app.append(row);
+
+  // Module-wise list
+  app.append(el("h2", "section-title", "Module-wise quiz"));
+  const list = el("div", "mod-list");
+  MODULES.forEach((mod, m) => {
+    const b = el("button", "mod");
+    const left = el("div");
+    left.append(el("div", "t", mod.name));
+    b.append(left, el("span", "pill", mod.qs.length + " questions"));
+    b.onclick = () => startQuiz(mod.name, buildItems(pairsFor(m), doShuffle()));
+    list.append(b);
+  });
+  app.append(list);
+
+  app.append(el("p", "foot", "Tip: finish a module, check which topics you missed in the results, then use \"Retry missed\" to drill just those."));
+}
+
+/* =====================================================================
+   QUIZ SCREEN
+   ===================================================================== */
+function startQuiz(title, items) {
+  quiz = { title, items, picks: new Array(items.length).fill(null), idx: 0 };
+  renderQuestion();
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion() {
+  const { items, picks, idx } = quiz;
+  const it = items[idx];
+  const picked = picks[idx];
+  const answered = picked !== null;
+  app.replaceChildren();
+
+  // Top bar with exit link
+  const top = el("div", "topbar");
+  const exit = el("button", "link-btn", "Home");
+  exit.onclick = () => { if (confirm("Leave this quiz? Your progress will be lost.")) showHome(); };
+  top.append(exit, el("span", "pill", quiz.title));
+  app.append(top);
+
+  // Progress bar
+  const doneCount = picks.filter(p => p !== null).length;
+  const bar = el("div", "bar"); const fill = el("i");
+  fill.style.width = (doneCount / items.length * 100) + "%";
+  bar.append(fill);
+  app.append(bar);
+  app.append(Object.assign(el("div", "meta"), {}));
+  const meta = app.lastChild;
+  meta.append(el("span", "", "Question " + (idx + 1) + " of " + items.length), el("span", "", doneCount + " answered"));
+
+  // Question card
+  const card = el("div", "card");
+  card.append(el("div", "q-mod", it.mod), el("p", "q-text", it.text));
+
+  const opts = el("div", "opts");
+  it.opts.forEach((o, i) => {
+    const b = el("button", "opt");
+    b.append(el("span", "L", "ABCD"[i] + "."), el("span", "", o));
+    if (answered) {
+      b.disabled = true;
+      if (i === it.ans) b.classList.add("correct");
+      else if (i === picked) b.classList.add("wrong");
+    }
+    b.onclick = () => { quiz.picks[idx] = i; renderQuestion(); };
+    opts.append(b);
+  });
+  card.append(opts);
+
+  // Explanation shown after answering
+  if (answered) {
+    const ok = picked === it.ans;
+    const ex = el("div", "expl");
+    ex.append(el("b", "", ok ? "Correct" : "Not quite. The answer is " + "ABCD"[it.ans] + "."), document.createTextNode(it.expl));
+    card.append(ex);
+  }
+  app.append(card);
+
+  // Navigation
+  const nav = el("div", "nav");
+  const prev = el("button", "btn", "Previous"); prev.disabled = idx === 0;
+  prev.onclick = () => { quiz.idx--; renderQuestion(); };
+  const last = idx === items.length - 1;
+  const next = el("button", "btn primary", last ? "Finish and see results" : "Next");
+  next.onclick = () => {
+    if (last) {
+      const left = picks.filter(p => p === null).length;
+      if (left && !confirm(left + " question(s) are unanswered. Finish anyway?")) return;
+      showResults();
+    } else { quiz.idx++; renderQuestion(); }
+  };
+  nav.append(prev, next);
+  app.append(nav);
+
+  // Question palette for jumping around
+  const pal = el("details", "pal");
+  pal.append(el("summary", "", "Jump to a question"));
+  const grid = el("div", "grid");
+  items.forEach((q, i) => {
+    const d = el("button", "dot", String(i + 1));
+    if (picks[i] !== null) d.classList.add(picks[i] === q.ans ? "ok" : "no");
+    if (i === idx) d.classList.add("cur");
+    d.onclick = () => { quiz.idx = i; renderQuestion(); window.scrollTo(0, 0); };
+    grid.append(d);
+  });
+  pal.append(grid);
+  app.append(pal);
+
+  // Allow finishing early from any question
+  if (!last) {
+    const fin = el("button", "link-btn", "Finish early and see results");
+    fin.style.marginTop = "14px";
+    fin.onclick = () => {
+      const left = picks.filter(p => p === null).length;
+      if (confirm(left + " question(s) are unanswered. Finish now?")) showResults();
+    };
+    app.append(fin);
+  }
+}
+
+/* =====================================================================
+   RESULTS SCREEN
+   ===================================================================== */
+function showResults() {
+  const { items, picks, title } = quiz;
+  const total = items.length;
+  const correct = items.filter((q, i) => picks[i] === q.ans).length;
+  const skipped = picks.filter(p => p === null).length;
+  const pct = Math.round(correct / total * 100);
+
+  app.replaceChildren();
+  const top = el("div", "topbar");
+  top.append(el("h2", "", "Results"), el("span", "pill", title));
+  app.append(top);
+
+  const card = el("div", "card score");
+  card.append(el("div", "big", correct + " / " + total));
+  card.append(el("p", "", pct + "% correct" + (skipped ? ", " + skipped + " skipped" : "")));
+  const msg = pct >= 85 ? "Excellent. You are exam-ready on this set." :
+              pct >= 60 ? "Good progress. Review the missed ones below." :
+                          "Keep going. Read the explanations below and retry the missed questions.";
+  card.append(el("p", "", msg));
+  app.append(card);
+
+  // Per-module breakdown (only useful if more than one module is in the quiz)
+  const byMod = {};
+  items.forEach((q, i) => {
+    byMod[q.mod] = byMod[q.mod] || { c: 0, t: 0 };
+    byMod[q.mod].t++;
+    if (picks[i] === q.ans) byMod[q.mod].c++;
+  });
+  const names = Object.keys(byMod);
+  if (names.length > 1) {
+    app.append(el("h3", "section-title", "By module"));
+    const bd = el("div", "breakdown");
+    names.forEach(n => {
+      const r = el("div", "brow");
+      r.append(el("span", "", n), el("b", "", byMod[n].c + " / " + byMod[n].t));
+      const b = el("div", "bar"); const f = el("i"); f.style.width = (byMod[n].c / byMod[n].t * 100) + "%"; b.append(f);
+      r.append(b); bd.append(r);
+    });
+    app.append(bd);
+  }
+
+  // Action buttons
+  const missed = items.filter((q, i) => picks[i] !== q.ans);
+  const actions = el("div", "actions");
+  if (missed.length) {
+    const retry = el("button", "btn primary", "Retry missed (" + missed.length + ")");
+    retry.onclick = () => {
+      // Rebuild the missed questions with fresh option order
+      const redo = missed.map(q => {
+        const order = shuffle(q.opts.map((_, i) => i));
+        return { mod: q.mod, text: q.text, expl: q.expl, opts: order.map(i => q.opts[i]), ans: order.indexOf(q.ans) };
+      });
+      startQuiz("Retry missed", redo);
+    };
+    actions.append(retry);
+  }
+  const home = el("button", "btn", "Back to home");
+  home.onclick = showHome;
+  actions.append(home);
+  app.append(actions);
+
+  // Review list of wrong or skipped questions
+  if (missed.length) {
+    app.append(el("h3", "section-title", "Review what you missed"));
+    items.forEach((q, i) => {
+      if (picks[i] === q.ans) return;
+      const r = el("div", "rev");
+      r.append(el("div", "q-mod", "Q" + (i + 1) + ". " + q.mod));
+      r.append(el("p", "q-text", q.text));
+      const yours = picks[i] === null ? "Skipped" : "ABCD"[picks[i]] + ". " + q.opts[picks[i]];
+      const p1 = el("p", "ans"); p1.append(el("span", "tag-bad", "Your answer: "), document.createTextNode(yours));
+      const p2 = el("p", "ans"); p2.append(el("span", "tag-good", "Correct: "), document.createTextNode("ABCD"[q.ans] + ". " + q.opts[q.ans]));
+      const p3 = el("p", "ans", q.expl);
+      r.append(p1, p2, p3);
+      app.append(r);
+    });
+  }
+  window.scrollTo(0, 0);
+}
+
+showHome();
+</script>
+</body>
+</html>
